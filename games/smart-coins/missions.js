@@ -1,0 +1,17 @@
+const MISSIONS=[
+{emoji:'🐰🥕',name:'Помоги зайчику',place:'Огород добрых дел',story:'Зайчик выращивает морковку. У него есть 10 монет и желание купить красивую шляпу. Но для будущего урожая ему нужны семена за 6 монет.',question:'Как ему поступить?',choices:[{label:'🌱 Купить семена за 6',result:'Зайчик посадил семена и вырастит новую морковку. Он выбрал то, что нужно для полезного дела!',good:true},{label:'🎩 Купить шляпу за 10',result:'Шляпа красивая, но на семена денег не осталось. В следующий раз стоит подумать о важном заранее.',good:false}]},
+{emoji:'🐻🍯',name:'Медведь и ярмарка',place:'Ярмарочная площадь',story:'Медведь продаёт баночки мёда. Один покупатель предложил 8 монет, другой — 5 монет за такую же баночку. Медведь хочет честно назначить одну понятную цену для всех.',question:'Что ему поможет?',choices:[{label:'🏷️ Поставить одну справедливую цену',result:'Покупатели видят понятную цену. Честная торговля помогает доверять друг другу.',good:true},{label:'🙈 Каждому называть случайную цену',result:'Покупатели запутались и расстроились. Честные правила удобнее для всех.',good:false}]},
+{emoji:'🦊🎈',name:'Праздник Лисёнка',place:'Поляна праздников',story:'У Лисёнка есть 12 монет. На праздник нужны угощения за 7 монет. Он ещё хочет воздушный шар за 8 монет, но всё вместе купить не получится.',question:'Что выбрать сначала?',choices:[{label:'🍎 Угощения для гостей',result:'Гости довольны, и ещё осталось 5 монет. Шарик можно купить в другой раз!',good:true},{label:'🎈 Только большой шарик',result:'Шарик яркий, но друзьям нечего предложить. Полезно учитывать и других.',good:false}]},
+{emoji:'🐢🌧️',name:'Черепашка и дождь',place:'Дождливый берег',story:'Черепашка накопила 15 монет. Начался дождь, и старый зонтик сломался. Новый стоит 9 монет.',question:'Что делать с накоплениями?',choices:[{label:'☂️ Купить нужный зонтик',result:'Хорошо, что был запас! Теперь Черепашка может гулять, а 6 монет останутся.',good:true},{label:'💎 Потратить всё на блестяшки',result:'Блестяшки красивые, но от дождя не спасут. Запас нужен для важных случаев.',good:false}]}
+];
+function renderMission(v){
+const m=MISSIONS[missionIndex],done=state.missionsDone||[],completed=done.includes(missionIndex);
+v.innerHTML='<div class="center mission-steps">🎭 История '+(missionIndex+1)+' из '+MISSIONS.length+' · Пройдено '+done.length+'</div><div class="big">'+m.emoji+'</div><h2>'+m.name+'</h2><div class="center"><span class="mission-place">📍 '+m.place+'</span></div><p>'+m.story+'</p><h2>'+m.question+'</h2>'+
+(missionChoice===null?
+'<div class="answers">'+m.choices.map((c,i)=>'<button class="choice" onclick="chooseMission('+i+')">'+c.label+'</button>').join('')+'</div>':
+'<div class="feedback '+(m.choices[missionChoice].good?'':'try')+'">'+m.choices[missionChoice].result+'</div>'+
+'<div class="center">'+(completed?'<span class="mission-complete">⭐ История пройдена</span>':'')+'<button class="primary" onclick="nextMission()">Следующая история →</button></div>')+
+'<p class="notice">За первое завершение каждой истории: 5 🪙 и ⭐. Здесь можно пробовать разные решения, не теряя монеты.</p>';
+}
+function chooseMission(i){if(missionChoice!==null)return;missionChoice=i;const m=MISSIONS[missionIndex];if(!state.missionsDone)state.missionsDone=[];if(!state.missionsDone.includes(missionIndex)){state.missionsDone.push(missionIndex);state.coins+=5;state.stars+=1;save();tone(true)}speak(m.choices[i].result);render()}
+function nextMission(){missionIndex=(missionIndex+1)%MISSIONS.length;missionChoice=null;render();if(soundEnabled)readCurrent()}
