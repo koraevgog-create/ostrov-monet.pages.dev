@@ -1,0 +1,8 @@
+/* Goal selection and savings — version 0.7 */
+const GOALS=[{emoji:'🧸',name:'Игрушка',cost:20},{emoji:'🎁',name:'Подарок другу',cost:30},{emoji:'🛴',name:'Самокат',cost:70},{emoji:'🚲',name:'Велосипед',cost:120},{emoji:'🏡',name:'Домик мечты',cost:250}];
+function currentGoal(){return GOALS.find(g=>g.name===state.goal)||GOALS[3]}
+function renderGoals(v){
+ const goal=currentGoal(),s=Math.max(0,Number(state.savings)||0),done=s>=goal.cost;
+ v.innerHTML='<div class="big">'+goal.emoji+'</div><h2>Моя мечта: '+goal.name+'</h2><p>Выбери, на что хочешь копить. Монеты уже в копилке никуда не исчезают.</p><div class="goal-grid">'+GOALS.map((g,i)=>'<button class="goal-choice '+(g.name===goal.name?'picked':'')+'" onclick="selectGoal('+i+')"><span>'+g.emoji+'</span><strong>'+g.name+'</strong><small>'+g.cost+' 🪙</small></button>').join('')+'</div><div class="progress" role="progressbar" aria-valuenow="'+Math.min(s,goal.cost)+'" aria-valuemin="0" aria-valuemax="'+goal.cost+'"><div style="width:'+Math.min(100,s/goal.cost*100)+'%"></div></div><p><strong>'+s+' / '+goal.cost+' 🪙</strong></p><div class="center"><button class="primary" '+(state.coins<5?'disabled':'')+' onclick="deposit()">🐷 Отложить 5 монет</button></div><div class="feedback">'+(done?'🎉 Ура! Ты достиг цели! Теперь можешь выбрать новую мечту.':'До мечты осталось '+(goal.cost-s)+' монет. По чуть-чуть — и получится!')+'</div><p class="notice">Выбор другой мечты не обнуляет накопления. Игровые монеты нельзя обменять на настоящие деньги.</p>';
+}
+function selectGoal(i){if(!GOALS[i])return;state.goal=GOALS[i].name;save();render();speak('Новая мечта: '+state.goal)}
