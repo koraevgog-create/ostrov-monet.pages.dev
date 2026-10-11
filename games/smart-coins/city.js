@@ -34,12 +34,21 @@ v.innerHTML=top+'<div class="big">🐷</div><h2>Копилка мечты</h2><p
 function enterCity(i){if(!CITY_PLACES[i])return;cityPlace=i;selectedJob=-1;jobAttempt=false;cityMessage='';render();if(soundEnabled)speak(CITY_PLACES[i][1])}
 function selectWork(i){if(!workReady())return;selectedJob=i;jobAttempt=false;miniStep=0;cityMessage='';render();if(soundEnabled)speak(WORK[i].intro)}
 
+
 function renderMiniTask(i){
-if(i===0)return '<div class="mini-board"><div class="mini-canvas"><span>🎨</span><div class="mini-flower">'+(miniStep>0?'🌼':'❔')+'</div></div><p>Укрась открытку цветком!</p><button class="primary" onclick="miniWork(0)">🌼 Нарисовать цветок</button></div>';
-if(i===1)return '<div class="mini-board"><div class="mini-canvas mini-garden"><span>🌱</span><div class="mini-flower">'+(miniStep>0?'🌻':'🌰')+'</div></div><p>Полей семечко, чтобы появился цветок!</p><button class="primary" onclick="miniWork(1)">💧 Полить растение</button></div>';
-return '<div class="mini-board"><div class="mini-apples">🍎 '+(miniStep>0?'🍎':'⬜')+'</div><p>Покупатель попросил два яблока. Добавь второе!</p><button class="primary" onclick="miniWork(2)">🍎 Положить яблоко</button></div>'
+const steps=i===0?['🎨 Выбери цвет открытки','🌼 Добавь украшение','✉️ Подпиши открытку']:i===1?['🌰 Посади семечко','💧 Полей землю','☀️ Дай растению солнечный свет']:['🧺 Возьми корзинку','🍎 Положи первое яблоко','🍎 Положи второе яблоко'];
+const pictures=i===0?['📄','🟨','🌼','💌']:i===1?['🪴','🌰','🌱','🌻']:['🧺','🧺','🍎','🍎🍎'];
+const labels=i===0?['🟨 Выбрать жёлтый','🌼 Нарисовать цветок','✍️ Подписать']:i===1?['🌰 Посадить','💧 Полить','☀️ Поставить на свет']:['🧺 Взять корзинку','🍎 Добавить яблоко','🍎 Добавить ещё одно'];
+return '<div class="mini-board"><div class="mini-count">Шаг '+(miniStep+1)+' из 3</div><div class="progress"><div style="width:'+(miniStep/3*100)+'%"></div></div><div class="mini-scene" aria-live="polite">'+pictures[miniStep]+'</div><p>'+steps[miniStep]+'</p><button class="primary" onclick="miniWork('+i+')">'+labels[miniStep]+'</button><p class="notice">Сначала закончи дело — награду получишь в конце.</p></div>';
 }
-function miniWork(i){if(selectedJob!==i||jobAttempt||!workReady())return;miniStep=1;jobAttempt=true;state.energy=Math.max(0,state.energy-1);state.coins+=5;state.jobsDone=(state.jobsDone||0)+1;state.jobHistory=(state.jobHistory||[]).concat([{day:state.day,job:WORK[i].name}]).slice(-20);cityMessage='🎉 '+WORK[i].explain;save();tone();speak('Молодец! Ты сделал полезное дело и получил пять монет.');render()}
+function miniWork(i){
+if(selectedJob!==i||jobAttempt||!workReady()||miniStep<0||miniStep>=3)return;
+miniStep++;
+if(miniStep<3){render();tone();return}
+jobAttempt=true;state.energy=Math.max(0,state.energy-1);state.coins+=5;state.jobsDone=(state.jobsDone||0)+1;
+state.jobHistory=(state.jobHistory||[]).concat([{day:state.day,job:WORK[i].name}]).slice(-20);
+cityMessage='🎉 '+WORK[i].explain;save();tone();speak('Молодец! Ты закончил дело и заработал пять монет.');render()
+}
 function newDay(){state.day=(state.day||1)+1;state.energy=3;selectedJob=-1;cityPlace=null;cityMessage='☀️ Новый день! Ты отдохнул и снова можешь помогать жителям.';save();tone();render();speak('Доброе утро! Новый день начинается!')}
 function budgetFive(type){if(state.coins<5)return;const valid=['saved','joy','giving','learning'];if(!valid.includes(type))return;state.budget=state.budget||{saved:0,joy:0,giving:0,learning:0};state.coins-=5;state.budget[type]=(state.budget[type]||0)+5;if(type==='saved')state.savings+=5;cityMessage='Ты распределил 5 монет. Подумай, зачем нужен каждый конверт.';save();tone();render()}
 function spendEnvelope(type){if(!['joy','giving','learning'].includes(type))return;const b=state.budget||{};if((b[type]||0)<5)return;b[type]-=5;if(type==='giving')state.kind++;cityMessage=type==='joy'?'🎈 Приятные впечатления тоже важны!':type==='learning'?'📚 Ты вложил время и монеты в новые знания!':'💚 Ты помог другим. Спасибо!';save();tone();render();speak(cityMessage)}
