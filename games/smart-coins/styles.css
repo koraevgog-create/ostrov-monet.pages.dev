@@ -50,3 +50,14 @@ body{background:linear-gradient(180deg,#8cdbff 0,#d5f4ff 38%,#ecfff0 72%,#fff8e7
 .nav{position:relative}.nav button{border:2px solid #ffffff;box-shadow:0 5px 0 #ccd6ea}
 .progress{height:19px;border:3px solid #e6edff}
 @media (max-width:550px){.city-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.city-card span{font-size:43px}.city-card{min-height:136px}.budget-spend button{width:100%}}
+
+/* Level 8: hand-drawn SVG village map */
+.village{position:relative;overflow:hidden;min-height:420px;padding:26px 20px 48px;background:linear-gradient(#a9e8ff 0%,#def7ff 48%,#a9df94 49%,#7fcf88 100%);border:5px solid #fff;border-radius:32px;box-shadow:0 12px 0 #b8d2aa,0 20px 35px #4b99763d}
+.village-title{text-align:center;position:relative;z-index:2;font-size:clamp(22px,4vw,32px);font-weight:1000;color:#455c88;text-shadow:2px 2px white;margin-bottom:20px}
+.village-sun{position:absolute;right:7%;top:6%;height:68px;width:68px;border-radius:50%;background:#ffdd67;box-shadow:0 0 0 12px #fff3af7d;animation:bob 4s infinite}
+.village-cloud{position:absolute;top:13%;left:7%;width:90px;height:28px;border-radius:40px;background:white;box-shadow:28px -13px 0 7px white,-18px 5px 0 2px white}
+.village-path{position:absolute;left:-10%;right:-10%;height:110px;bottom:21px;background:#e4c49a;border-radius:55%;transform:rotate(-5deg);border:12px solid #d8b588}
+.village-buildings{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}
+.village-building{display:flex;align-items:center;flex-direction:column;gap:4px;min-width:0;padding:8px 4px 10px;background:#fff9e5da;border:3px solid #ffffff;border-radius:24px;box-shadow:0 8px 0 #68996c7a;transition:transform .2s;cursor:pointer;color:#3f5065}
+.village-building:hover,.village-building:focus-visible{transform:translateY(-7px)}.building-picture{width:100%;max-width:148px;display:block}.building-picture svg{display:block;width:100%;filter:drop-shadow(0 4px 2px #74634b55)}.village-building strong{font-size:16px}.village-building small{color:#586e72;font-size:11px}.village-fox{font-size:54px;position:absolute;bottom:4px;right:8%;z-index:3;animation:bob 2.5s infinite;pointer-events:none}
+@media(max-width:570px){.village{padding:25px 9px 55px;min-height:470px}.village-buildings{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.village-building{padding:5px 3px}.building-picture{max-width:95px}.village-building strong{font-size:13px}.village-building small{font-size:10px}.village-title{font-size:22px}}
