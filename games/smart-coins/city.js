@@ -32,23 +32,33 @@ if(cityPlace===3){v.innerHTML=top+'<div class="big">🏪</div><h2>Магазин
 v.innerHTML=top+'<div class="big">🐷</div><h2>Копилка мечты</h2><p>В копилке уже '+state.savings+' монет!</p><div class="center"><button class="primary" onclick="show(\'dream\')">🐷 Открыть копилку</button></div>'+back;
 }
 function enterCity(i){if(!CITY_PLACES[i])return;cityPlace=i;selectedJob=-1;jobAttempt=false;cityMessage='';render();if(soundEnabled)speak(CITY_PLACES[i][1])}
-function selectWork(i){if(!workReady())return;selectedJob=i;jobAttempt=false;miniStep=0;cityMessage='';render();if(soundEnabled)speak(WORK[i].intro)}
+function selectWork(i){if(!workReady())return;selectedJob=i;jobAttempt=false;miniStep=0;paintMarks=0;appleCount=0;cityMessage='';render();if(i===0)initPaintCanvas();if(soundEnabled)speak(WORK[i].intro)}
 
 
+
+let paintMarks=0,painting=false,appleCount=0;
 function renderMiniTask(i){
-const steps=i===0?['🎨 Выбери цвет открытки','🌼 Добавь украшение','✉️ Подпиши открытку']:i===1?['🌰 Посади семечко','💧 Полей землю','☀️ Дай растению солнечный свет']:['🧺 Возьми корзинку','🍎 Положи первое яблоко','🍎 Положи второе яблоко'];
-const pictures=i===0?['📄','🟨','🌼','💌']:i===1?['🪴','🌰','🌱','🌻']:['🧺','🧺','🍎','🍎🍎'];
-const labels=i===0?['🟨 Выбрать жёлтый','🌼 Нарисовать цветок','✍️ Подписать']:i===1?['🌰 Посадить','💧 Полить','☀️ Поставить на свет']:['🧺 Взять корзинку','🍎 Добавить яблоко','🍎 Добавить ещё одно'];
-return '<div class="mini-board"><div class="mini-count">Шаг '+(miniStep+1)+' из 3</div><div class="progress"><div style="width:'+(miniStep/3*100)+'%"></div></div><div class="mini-scene" aria-live="polite">'+pictures[miniStep]+'</div><p>'+steps[miniStep]+'</p><button class="primary" onclick="miniWork('+i+')">'+labels[miniStep]+'</button><p class="notice">Сначала закончи дело — награду получишь в конце.</p></div>';
+if(i===0)return '<div class="mini-board"><div class="mini-count">🎨 Нарисуй открытку</div><p>Води пальцем или мышкой по листу и нарисуй цветок, солнце или подарок.</p><canvas id="paintCanvas" class="paint-canvas" width="600" height="330" aria-label="Поле для рисования"></canvas><div class="paint-controls"><button class="secondary" onclick="paintColor=\'#e55f82\'">🩷 Розовый</button><button class="secondary" onclick="paintColor=\'#4d9cdb\'">💙 Синий</button><button class="secondary" onclick="paintColor=\'#63ac73\'">💚 Зелёный</button></div><p class="notice">Нарисуй несколько линий, затем нажми «Готово».</p><button class="primary" onclick="finishPainting()">✉️ Открытка готова!</button></div>';
+if(i===1){
+ const garden=state.garden||{stage:0,plantedDay:0};
+ const labels=['🌰 Посади семечко в землю','💧 Полей посаженное семечко','🌻 Собери цветок'];
+ const images=['🪴','🌱','🌿','🌻'];
+ const stage=garden.stage||0,waiting=stage===2&&(state.day||1)<(garden.plantedDay||1)+1;
+ return '<div class="mini-board"><div class="mini-count">🌱 Садовник</div><div class="mini-scene">'+images[stage]+'</div><p>'+ (waiting?'Растению нужно время! Отдохни и возвращайся в следующий игровой день.':labels[Math.min(stage,2)])+'</p><button class="primary" '+(waiting?'disabled':'')+' onclick="gardenAction()">'+(stage===0?'🌰 Посадить':stage===1?'💧 Полить':'🌻 Собрать урожай')+'</button><p class="notice">Росток растёт постепенно. За цветок получишь 5 монет только после полного цикла.</p></div>';
 }
-function miniWork(i){
-if(selectedJob!==i||jobAttempt||!workReady()||miniStep<0||miniStep>=3)return;
-miniStep++;
-if(miniStep<3){render();tone();return}
-jobAttempt=true;state.energy=Math.max(0,state.energy-1);state.coins+=5;state.jobsDone=(state.jobsDone||0)+1;
-state.jobHistory=(state.jobHistory||[]).concat([{day:state.day,job:WORK[i].name}]).slice(-20);
-cityMessage='🎉 '+WORK[i].explain;save();tone();speak('Молодец! Ты закончил дело и заработал пять монет.');render()
+return '<div class="mini-board"><div class="mini-count">🍎 Помощник магазина</div><p>Покупатель заказал ровно два яблока. Нажимай на яблоки, чтобы положить их в корзину.</p><div class="mini-scene basket-scene">🧺 '+('🍎'.repeat(appleCount))+'</div><div class="apple-actions"><button class="secondary" onclick="addApple()">🍎 Добавить яблоко</button><button class="secondary" onclick="removeApple()" '+(appleCount===0?'disabled':'')+'>↩️ Убрать яблоко</button></div><p>В корзинке: '+appleCount+' из 2 яблок.</p><button class="primary" onclick="finishBasket()">📦 Передать заказ</button></div>';
 }
+let paintColor='#e55f82',paintLast=null;
+function initPaintCanvas(){const c=document.getElementById('paintCanvas');if(!c)return;c.addEventListener('pointerdown',startPaint);c.addEventListener('pointermove',movePaint);c.addEventListener('pointerup',endPaint);c.addEventListener('pointercancel',endPaint)}
+function startPaint(e){if(selectedJob!==0||jobAttempt)return;painting=true;paintLast=null;e.currentTarget.setPointerCapture(e.pointerId);movePaint(e)}
+function movePaint(e){if(!painting||selectedJob!==0)return;const canvas=e.currentTarget,rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const c=canvas.getContext('2d');c.strokeStyle=paintColor;c.lineWidth=9;c.lineJoin='round';c.lineCap='round';if(paintLast){c.beginPath();c.moveTo(paintLast.x,paintLast.y);c.lineTo(x,y);c.stroke();paintMarks++}else{c.beginPath();c.arc(x,y,5,0,2*Math.PI);c.fillStyle=paintColor;c.fill();paintMarks++}paintLast={x,y}}
+function endPaint(){painting=false;paintLast=null}
+function finishPainting(){if(paintMarks<7){cityMessage='Нарисуй хотя бы несколько линий на открытке.';const p=document.querySelector('.mini-board .notice');if(p)p.textContent=cityMessage;return}completeMiniWork(0)}
+function addApple(){if(selectedJob!==2||jobAttempt)return;appleCount=Math.min(4,appleCount+1);render()}
+function removeApple(){if(selectedJob!==2||jobAttempt)return;appleCount=Math.max(0,appleCount-1);render()}
+function finishBasket(){if(appleCount!==2){cityMessage='Нужно ровно два яблока. Поправь заказ!';const p=document.querySelector('.mini-board p:last-of-type');if(p)p.textContent=cityMessage;return}completeMiniWork(2)}
+function gardenAction(){if(selectedJob!==1||jobAttempt||!workReady())return;let garden=state.garden||{stage:0,plantedDay:0};if(garden.stage===0){garden={stage:1,plantedDay:state.day||1}}else if(garden.stage===1){garden.stage=2}else if(garden.stage===2){if((state.day||1)<garden.plantedDay+1)return;state.garden={stage:0,plantedDay:0};completeMiniWork(1);return}state.garden=garden;save();render();tone()}
+function completeMiniWork(i){if(selectedJob!==i||jobAttempt||!workReady())return;jobAttempt=true;state.energy=Math.max(0,state.energy-1);state.coins+=5;state.jobsDone=(state.jobsDone||0)+1;state.jobHistory=(state.jobHistory||[]).concat([{day:state.day,job:WORK[i].name}]).slice(-20);cityMessage='🎉 '+WORK[i].explain;save();tone();speak('Молодец! Ты закончил дело и заработал пять монет.');render()}
 function newDay(){state.day=(state.day||1)+1;state.energy=3;selectedJob=-1;cityPlace=null;cityMessage='☀️ Новый день! Ты отдохнул и снова можешь помогать жителям.';save();tone();render();speak('Доброе утро! Новый день начинается!')}
 function budgetFive(type){if(state.coins<5)return;const valid=['saved','joy','giving','learning'];if(!valid.includes(type))return;state.budget=state.budget||{saved:0,joy:0,giving:0,learning:0};state.coins-=5;state.budget[type]=(state.budget[type]||0)+5;if(type==='saved')state.savings+=5;cityMessage='Ты распределил 5 монет. Подумай, зачем нужен каждый конверт.';save();tone();render()}
 function spendEnvelope(type){if(!['joy','giving','learning'].includes(type))return;const b=state.budget||{};if((b[type]||0)<5)return;b[type]-=5;if(type==='giving')state.kind++;cityMessage=type==='joy'?'🎈 Приятные впечатления тоже важны!':type==='learning'?'📚 Ты вложил время и монеты в новые знания!':'💚 Ты помог другим. Спасибо!';save();tone();render();speak(cityMessage)}
