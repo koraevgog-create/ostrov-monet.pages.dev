@@ -68,3 +68,5 @@ body{background:linear-gradient(180deg,#8cdbff 0,#d5f4ff 38%,#ecfff0 72%,#fff8e7
 .mini-board .primary{max-width:100%;margin:8px auto}.mini-board p{font-weight:850}
 
 .mini-scene{min-height:170px;display:grid;place-items:center;font-size:80px;background:#fff8e8;border:4px dashed #d8bb8f;border-radius:22px;margin:15px 0}.mini-count{text-align:center;font-weight:900;font-size:19px;color:#6655a5}
+
+.paint-canvas{display:block;width:100%;max-width:600px;aspect-ratio:20/11;height:auto;background:#fffdf6;border:5px solid #e6c49f;border-radius:20px;touch-action:none;margin:14px auto;cursor:crosshair}.paint-controls,.apple-actions{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:13px auto}.basket-scene{font-size:clamp(46px,11vw,76px);word-break:break-word}.mini-board button:disabled{opacity:.5;cursor:default}
