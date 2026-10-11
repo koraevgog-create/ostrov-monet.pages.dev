@@ -66,3 +66,5 @@ body{background:linear-gradient(180deg,#8cdbff 0,#d5f4ff 38%,#ecfff0 72%,#fff8e7
 .mini-canvas{position:relative;margin:0 auto;max-width:300px;min-height:175px;border-radius:20px;border:8px solid #c69564;background:#fff8e4;display:flex;justify-content:space-around;align-items:center;box-shadow:0 5px 0 #ad7855}
 .mini-canvas>span{font-size:60px}.mini-flower{font-size:72px;animation:appear .5s ease-out}.mini-garden{background:linear-gradient(#bdeafa 65%,#b1dc96 66%);border-color:#9cc97e}.mini-apples{font-size:70px;margin:30px auto;letter-spacing:15px}
 .mini-board .primary{max-width:100%;margin:8px auto}.mini-board p{font-weight:850}
+
+.mini-scene{min-height:170px;display:grid;place-items:center;font-size:80px;background:#fff8e8;border:4px dashed #d8bb8f;border-radius:22px;margin:15px 0}.mini-count{text-align:center;font-weight:900;font-size:19px;color:#6655a5}
