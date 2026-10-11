@@ -10,8 +10,8 @@ v.innerHTML='<div class="center mission-steps">🎭 История '+(missionInd
 (missionChoice===null?
 '<div class="answers">'+m.choices.map((c,i)=>'<button class="choice" onclick="chooseMission('+i+')">'+c.label+'</button>').join('')+'</div>':
 '<div class="feedback '+(m.choices[missionChoice].good?'':'try')+'">'+m.choices[missionChoice].result+'</div>'+
-'<div class="center">'+(completed?'<span class="mission-complete">⭐ История пройдена</span>':'')+'<button class="primary" onclick="nextMission()">Следующая история →</button></div>')+
+'<div class="center">'+(completed?'<span class="mission-complete">⭐ История пройдена</span>':'')+(m.choices[missionChoice].good?'<button class="primary" onclick="nextMission()">Следующая история →</button>':'<button class="primary" onclick="missionChoice=null;render()">Попробовать по-другому ↻</button>')+'</div>')+
 '<p class="notice">За первое завершение каждой истории: 5 🪙 и ⭐. Здесь можно пробовать разные решения, не теряя монеты.</p>';
 }
-function chooseMission(i){if(missionChoice!==null)return;missionChoice=i;const m=MISSIONS[missionIndex];if(!state.missionsDone)state.missionsDone=[];if(!state.missionsDone.includes(missionIndex)){state.missionsDone.push(missionIndex);state.coins+=5;state.stars+=1;save();tone(true)}speak(m.choices[i].result);render()}
+function chooseMission(i){if(missionChoice!==null)return;missionChoice=i;const m=MISSIONS[missionIndex];if(!state.missionsDone)state.missionsDone=[];if(m.choices[i].good&&!state.missionsDone.includes(missionIndex)){state.missionsDone.push(missionIndex);state.coins+=5;state.stars+=1;save();tone(true)}speak(m.choices[i].result);render()}
 function nextMission(){missionIndex=(missionIndex+1)%MISSIONS.length;missionChoice=null;render();if(soundEnabled)readCurrent()}
