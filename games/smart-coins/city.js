@@ -32,13 +32,13 @@ if(cityPlace===3){v.innerHTML=top+'<div class="big">🏪</div><h2>Магазин
 v.innerHTML=top+'<div class="big">🐷</div><h2>Копилка мечты</h2><p>В копилке уже '+state.savings+' монет!</p><div class="center"><button class="primary" onclick="show(\'dream\')">🐷 Открыть копилку</button></div>'+back;
 }
 function enterCity(i){if(!CITY_PLACES[i])return;cityPlace=i;selectedJob=-1;jobAttempt=false;cityMessage='';render();if(soundEnabled)speak(CITY_PLACES[i][1])}
-function selectWork(i){if(!workReady())return;selectedJob=i;jobAttempt=false;miniStep=0;paintMarks=0;appleCount=0;cityMessage='';render();if(i===0)initPaintCanvas();if(soundEnabled)speak(WORK[i].intro)}
+function selectWork(i){if(!workReady())return;selectedJob=i;jobAttempt=false;miniStep=0;paintMarks=0;appleCount=0;cityMessage='';render();if(soundEnabled)speak(WORK[i].intro)}
 
 
 
 let paintMarks=0,painting=false,appleCount=0;
 function renderMiniTask(i){
-if(i===0)return '<div class="mini-board"><div class="mini-count">🎨 Нарисуй открытку</div><p>Води пальцем или мышкой по листу и нарисуй цветок, солнце или подарок.</p><canvas id="paintCanvas" class="paint-canvas" width="600" height="330" aria-label="Поле для рисования"></canvas><div class="paint-controls"><button class="secondary" onclick="paintColor=\'#e55f82\'">🩷 Розовый</button><button class="secondary" onclick="paintColor=\'#4d9cdb\'">💙 Синий</button><button class="secondary" onclick="paintColor=\'#63ac73\'">💚 Зелёный</button></div><p class="notice">Нарисуй несколько линий, затем нажми «Готово».</p><button class="primary" onclick="finishPainting()">✉️ Открытка готова!</button></div>';
+if(i===0)return '<div class="mini-board"><div class="mini-count">🎨 Нарисуй открытку</div><p>Води пальцем или мышкой по листу и нарисуй цветок, солнце или подарок.</p><canvas id="paintCanvas" class="paint-canvas" width="600" height="330" aria-label="Поле для рисования" onpointerdown="startPaint(event)" onpointermove="movePaint(event)" onpointerup="endPaint()" onpointercancel="endPaint()"></canvas><div class="paint-controls"><button class="secondary" onclick="paintColor=\'#e55f82\'">🩷 Розовый</button><button class="secondary" onclick="paintColor=\'#4d9cdb\'">💙 Синий</button><button class="secondary" onclick="paintColor=\'#63ac73\'">💚 Зелёный</button></div><p class="notice">Нарисуй несколько линий, затем нажми «Готово».</p><button class="primary" onclick="finishPainting()">✉️ Открытка готова!</button></div>';
 if(i===1){
  const garden=state.garden||{stage:0,plantedDay:0};
  const labels=['🌰 Посади семечко в землю','💧 Полей посаженное семечко','🌻 Собери цветок'];
@@ -49,7 +49,6 @@ if(i===1){
 return '<div class="mini-board"><div class="mini-count">🍎 Помощник магазина</div><p>Покупатель заказал ровно два яблока. Нажимай на яблоки, чтобы положить их в корзину.</p><div class="mini-scene basket-scene">🧺 '+('🍎'.repeat(appleCount))+'</div><div class="apple-actions"><button class="secondary" onclick="addApple()">🍎 Добавить яблоко</button><button class="secondary" onclick="removeApple()" '+(appleCount===0?'disabled':'')+'>↩️ Убрать яблоко</button></div><p>В корзинке: '+appleCount+' из 2 яблок.</p><button class="primary" onclick="finishBasket()">📦 Передать заказ</button></div>';
 }
 let paintColor='#e55f82',paintLast=null;
-function initPaintCanvas(){const c=document.getElementById('paintCanvas');if(!c)return;c.addEventListener('pointerdown',startPaint);c.addEventListener('pointermove',movePaint);c.addEventListener('pointerup',endPaint);c.addEventListener('pointercancel',endPaint)}
 function startPaint(e){if(selectedJob!==0||jobAttempt)return;painting=true;paintLast=null;e.currentTarget.setPointerCapture(e.pointerId);movePaint(e)}
 function movePaint(e){if(!painting||selectedJob!==0)return;const canvas=e.currentTarget,rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const c=canvas.getContext('2d');c.strokeStyle=paintColor;c.lineWidth=9;c.lineJoin='round';c.lineCap='round';if(paintLast){c.beginPath();c.moveTo(paintLast.x,paintLast.y);c.lineTo(x,y);c.stroke();paintMarks++}else{c.beginPath();c.arc(x,y,5,0,2*Math.PI);c.fillStyle=paintColor;c.fill();paintMarks++}paintLast={x,y}}
 function endPaint(){painting=false;paintLast=null}
