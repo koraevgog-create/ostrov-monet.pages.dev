@@ -12,3 +12,5 @@ const app=readFileSync('games/smart-coins/app.js','utf8');
 if(!app.includes("kids-smart-coins-v1"))throw Error('Save key changed: existing progress could be lost');
 if(!app.includes("show('adventure')"))throw Error('Game entry point missing');
 console.log('All static checks passed.');
+
+execFileSync(process.execPath,['scripts/test-game.mjs'],{stdio:'inherit'});
