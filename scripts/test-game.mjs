@@ -21,5 +21,5 @@ const garden=scene();garden.selectWork(1);garden.chooseCrop(2);garden.gardenActi
 assert.equal(garden.state.coins,0,'Garden cannot finish on planting day');
 garden.state.day=2;garden.gardenAction();assert.equal(garden.state.coins,5,'Garden rewards after another day');
 garden.gardenAction();assert.equal(garden.state.coins,5,'Garden cannot reward twice');
-const poor=scene();poor.state.energy=0;poor.selectWork(2);assert.equal(poor.selectedJob,-1);
+const poor=scene();poor.state.energy=0;poor.selectWork(2);poor.changeProduct(0,1);assert.equal(poor.state.coins,0,'No rewards without energy');
 console.log('Game economy smoke tests passed.');
