@@ -32,13 +32,13 @@ if(cityPlace===3){v.innerHTML=top+'<div class="big">🏪</div><h2>Магазин
 v.innerHTML=top+'<div class="big">🐷</div><h2>Копилка мечты</h2><p>В копилке уже '+state.savings+' монет!</p><div class="center"><button class="primary" onclick="show(\'dream\')">🐷 Открыть копилку</button></div>'+back;
 }
 function enterCity(i){if(!CITY_PLACES[i])return;cityPlace=i;selectedJob=-1;jobAttempt=false;cityMessage='';render();if(soundEnabled)speak(CITY_PLACES[i][1])}
-function selectWork(i){if(!workReady())return;selectedJob=i;jobAttempt=false;miniStep=0;paintMarks=0;appleCount=0;cityMessage='';render();if(soundEnabled)speak(WORK[i].intro)}
+function selectWork(i){if(!workReady())return;selectedJob=i;jobAttempt=false;miniStep=0;paintMarks=0;paintHistory=[];appleCount=0;cityMessage='';render();if(soundEnabled)speak(WORK[i].intro)}
 
 
 
-let paintMarks=0,painting=false,appleCount=0;
+let paintMarks=0,painting=false,appleCount=0,paintHistory=[],brushSize=9,paintEraser=false;
 function renderMiniTask(i){
-if(i===0)return '<div class="mini-board"><div class="mini-count">🎨 Нарисуй открытку</div><p>Води пальцем или мышкой по листу и нарисуй цветок, солнце или подарок.</p><canvas id="paintCanvas" class="paint-canvas" width="600" height="330" aria-label="Поле для рисования" onpointerdown="startPaint(event)" onpointermove="movePaint(event)" onpointerup="endPaint()" onpointercancel="endPaint()"></canvas><div class="paint-controls"><button class="secondary" onclick="paintColor=\'#e55f82\'">🩷 Розовый</button><button class="secondary" onclick="paintColor=\'#4d9cdb\'">💙 Синий</button><button class="secondary" onclick="paintColor=\'#63ac73\'">💚 Зелёный</button></div><p class="notice">Нарисуй несколько линий, затем нажми «Готово».</p><button class="primary" onclick="finishPainting()">✉️ Открытка готова!</button></div>';
+if(i===0)return '<div class="mini-board"><div class="mini-count">🎨 Нарисуй открытку</div><p>Води пальцем или мышкой по листу и нарисуй цветок, солнце или подарок.</p><canvas id="paintCanvas" class="paint-canvas" width="600" height="330" aria-label="Поле для рисования" onpointerdown="startPaint(event)" onpointermove="movePaint(event)" onpointerup="endPaint()" onpointercancel="endPaint()"></canvas><div class="paint-controls"><button class="secondary" onclick="setPaintColor(0)">🩷</button><button class="secondary" onclick="setPaintColor(1)">💙</button><button class="secondary" onclick="setPaintColor(2)">💚</button><button class="secondary" onclick="setPaintColor(3)">💛</button><button class="secondary" onclick="setPaintSize(4)">Тонко</button><button class="secondary" onclick="setPaintSize(18)">Толсто</button><button class="secondary" onclick="toggleEraser()">🧽 Ластик</button><button class="secondary" onclick="undoPaint()">↶ Назад</button><button class="secondary" onclick="clearPaint()">🗑️ Очистить</button><button class="secondary" onclick="stampPaint(0)">🌸</button><button class="secondary" onclick="stampPaint(1)">⭐</button><button class="secondary" onclick="stampPaint(2)">❤️</button></div><p class="notice">Нарисуй несколько линий, затем нажми «Готово».</p><button class="primary" onclick="finishPainting()">✉️ Открытка готова!</button></div>';
 if(i===1){
  const garden=state.garden||{stage:0,plantedDay:0};
  const labels=['🌰 Посади семечко в землю','💧 Полей посаженное семечко','🌻 Собери цветок'];
@@ -49,9 +49,17 @@ if(i===1){
 return '<div class="mini-board"><div class="mini-count">🍎 Помощник магазина</div><p>Покупатель заказал ровно два яблока. Нажимай на яблоки, чтобы положить их в корзину.</p><div class="mini-scene basket-scene">🧺 '+('🍎'.repeat(appleCount))+'</div><div class="apple-actions"><button class="secondary" onclick="addApple()">🍎 Добавить яблоко</button><button class="secondary" onclick="removeApple()" '+(appleCount===0?'disabled':'')+'>↩️ Убрать яблоко</button></div><p>В корзинке: '+appleCount+' из 2 яблок.</p><button class="primary" onclick="finishBasket()">📦 Передать заказ</button></div>';
 }
 let paintColor='#e55f82',paintLast=null;
-function startPaint(e){if(selectedJob!==0||jobAttempt)return;painting=true;paintLast=null;e.currentTarget.setPointerCapture(e.pointerId);movePaint(e)}
-function movePaint(e){if(!painting||selectedJob!==0)return;const canvas=e.currentTarget,rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const c=canvas.getContext('2d');c.strokeStyle=paintColor;c.lineWidth=9;c.lineJoin='round';c.lineCap='round';if(paintLast){c.beginPath();c.moveTo(paintLast.x,paintLast.y);c.lineTo(x,y);c.stroke();paintMarks++}else{c.beginPath();c.arc(x,y,5,0,2*Math.PI);c.fillStyle=paintColor;c.fill();paintMarks++}paintLast={x,y}}
+function startPaint(e){if(selectedJob!==0||jobAttempt)return;painting=true;paintLast=null;savePaintSnapshot();e.currentTarget.setPointerCapture(e.pointerId);movePaint(e)}
+function movePaint(e){if(!painting||selectedJob!==0)return;const canvas=e.currentTarget,rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const c=canvas.getContext('2d');c.strokeStyle=paintEraser?'#fffdf6':paintColor;c.lineWidth=brushSize;c.lineJoin='round';c.lineCap='round';if(paintLast){c.beginPath();c.moveTo(paintLast.x,paintLast.y);c.lineTo(x,y);c.stroke();paintMarks++}else{c.beginPath();c.arc(x,y,brushSize/2,0,2*Math.PI);c.fillStyle=paintEraser?'#fffdf6':paintColor;c.fill();paintMarks++}paintLast={x,y}}
 function endPaint(){painting=false;paintLast=null}
+const PAINT_COLORS=['#e55f82','#4d9cdb','#63ac73','#f7bc4b'];
+function setPaintColor(i){paintColor=PAINT_COLORS[i]||PAINT_COLORS[0];paintEraser=false}
+function setPaintSize(n){brushSize=n}
+function toggleEraser(){paintEraser=!paintEraser}
+function savePaintSnapshot(){const c=document.getElementById('paintCanvas');if(c){paintHistory.push({image:c.getContext('2d').getImageData(0,0,c.width,c.height),marks:paintMarks});if(paintHistory.length>12)paintHistory.shift()}}
+function undoPaint(){const c=document.getElementById('paintCanvas'),snap=paintHistory.pop();if(c&&snap){c.getContext('2d').putImageData(snap.image,0,0);paintMarks=snap.marks}}
+function clearPaint(){const c=document.getElementById('paintCanvas');if(c){savePaintSnapshot();c.getContext('2d').clearRect(0,0,c.width,c.height);paintMarks=0}}
+function stampPaint(i){const c=document.getElementById('paintCanvas');if(!c)return;savePaintSnapshot();const ctx=c.getContext('2d');ctx.font='74px sans-serif';ctx.textAlign='center';ctx.fillText(['🌸','⭐','❤️'][i]||'⭐',100+Math.random()*400,70+Math.random()*170);paintMarks+=8}
 function finishPainting(){if(paintMarks<7){cityMessage='Нарисуй хотя бы несколько линий на открытке.';const p=document.querySelector('.mini-board .notice');if(p)p.textContent=cityMessage;return}completeMiniWork(0)}
 function addApple(){if(selectedJob!==2||jobAttempt)return;appleCount=Math.min(4,appleCount+1);render()}
 function removeApple(){if(selectedJob!==2||jobAttempt)return;appleCount=Math.max(0,appleCount-1);render()}
