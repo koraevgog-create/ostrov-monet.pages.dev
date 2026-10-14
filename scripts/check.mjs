@@ -6,7 +6,7 @@ const home=readFileSync('index.html','utf8'),game=readFileSync('games/smart-coin
 if(!home.includes('./assets/site.css'))throw Error('Portal stylesheet not connected');
 for(const name of ['styles.css','data.js','residents.js','city.js','stories.js','missions.js','goals.js','app.js'])if(!game.includes('./'+name))throw Error('Missing game asset reference: '+name);
 if(game.includes('<style>')||game.includes('<script>'))throw Error('Inline code still exists');
-const js=['data.js','city.js','missions.js','app.js'];
+const js=['data.js','residents.js','city.js','stories.js','missions.js','goals.js','app.js'];
 for(const filename of js)execFileSync(process.execPath,['--check','games/smart-coins/'+filename]);
 const app=readFileSync('games/smart-coins/app.js','utf8');
 if(!app.includes("kids-smart-coins-v1"))throw Error('Save key changed: existing progress could be lost');
