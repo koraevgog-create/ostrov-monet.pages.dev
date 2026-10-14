@@ -14,3 +14,5 @@ if(!app.includes("show('adventure')"))throw Error('Game entry point missing');
 console.log('All static checks passed.');
 
 execFileSync(process.execPath,['scripts/test-game.mjs'],{stdio:'inherit'});
+
+execFileSync(process.execPath,['scripts/test-stories.mjs'],{stdio:'inherit'});
