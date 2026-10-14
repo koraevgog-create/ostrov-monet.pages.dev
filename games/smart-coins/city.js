@@ -18,7 +18,9 @@ function workReady(){return state.energy>0}
 function renderCity(v){
 const d=state.day||1,e=state.energy??3;
 const back='<div class="center"><button class="secondary" onclick="cityPlace=null;cityMessage=\'\';render()">← К городу</button></div>';
-const top='<div class="daybar">📅 День '+d+' · '+(e===3?'☀️ Утро':e===2?'🌤️ День':e===1?'🌇 Вечер':'🌙 Время отдыхать')+' · ⚡ Дела: '+e+'/3</div>';
+const active=Number.isInteger(state.activeStory)&&state.activeStory>=0&&state.activeStory<STORIES.length&&!storyCompleted(state.activeStory)?state.activeStory:null;
+const activeNote=active===null?'':'<div class="active-story">📖 Ты помогаешь: '+STORIES[active].character+' <button class="secondary" onclick="openStory('+active+')">Вернуться к истории →</button></div>';
+const top='<div class="daybar">📅 День '+d+' · '+(e===3?'☀️ Утро':e===2?'🌤️ День':e===1?'🌇 Вечер':'🌙 Время отдыхать')+' · ⚡ Дела: '+e+'/3</div>'+activeNote;
 if(cityPlace===null){
 v.innerHTML=top+'<div class="village"><div class="village-sun"></div><div class="village-cloud"></div><div class="village-title">🏘️ Добро пожаловать в город!</div><div class="village-path"></div><div class="village-buildings">'+CITY_PLACES.map((p,i)=>'<button class="village-building" onclick="enterCity('+i+')" aria-label="'+p[1]+'"><span class="building-picture">'+(CITY_ART[i]||'<span style="font-size:65px">📖</span>')+'</span><strong>'+p[1]+'</strong><small>'+p[2]+'</small></button>').join('')+'</div><div class="village-fox" aria-hidden="true">🦊</div></div><p>Выбери домик и отправляйся навстречу приключениям!</p><div class="center"><button class="primary" onclick="newDay()">🌙 Закончить день и отдохнуть</button></div><p class="notice">'+cityMessage+'</p>';return}
 if(cityPlace===5){renderDailyEvent(v);return}
